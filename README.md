@@ -51,13 +51,14 @@ oc get pods --all-namespaces
 echo 1 > /sys/fs/selinux/enforce
 ```
 
-# Remove MapR Volume Driver Plugin
+#### Remove MapR Volume Driver Plugin
+```
 oc delete -f kdf-provisioner.yaml
 oc delete -f kdf-openshift-sa.yaml
 oc delete -f kdf-openshift-scc.yaml
 oc delete -f kdf-openshift-cr.yaml
 oc delete -f kdf-plugin-openshift.yaml
 oc delete -f kdf-namespace.yaml
-
+```
 
 
