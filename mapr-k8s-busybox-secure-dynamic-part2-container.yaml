@@ -1,0 +1,36 @@
+# MapR Volume Driver Plugin for Kubernetes
+
+# Using the MapR Volume Driver Plugin for dynamic provisioning
+
+# Provisioning: dynamic
+# Container:    busybox
+
+# Pod
+kind: Pod
+apiVersion: v1
+metadata:
+  name: mapr-k8s-busybox
+  namespace: mapr-apps
+spec:
+#  nodeSelector:
+#    kubernetes.io/hostname: node01
+  containers:
+  - name: busybox
+    image: busybox
+    args:
+    - sleep
+    - "100000"
+    imagePullPolicy: Always
+    volumeMounts:
+    - name: maprfs-pvc
+      mountPath: "/mapr"
+  restartPolicy: "Never"
+  serviceAccount: mapr-apps-sa
+  serviceAccountName: mapr-apps-sa
+  volumes:
+  - name: maprfs-pvc
+    persistentVolumeClaim:
+      claimName: maprfs-pvc-busybox-secure-dynamic
+
+
+ 

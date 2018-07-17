@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+allowHostDirVolumePlugin: true
+defaultAddCapabilities: null
+kind: SecurityContextConstraints
+metadata:
+  annotations: null
+  name: mapr-apps-scc
+priority: 5
+readOnlyRootFilesystem: false
+runAsUser:
+  type: MustRunAsRange
+fsGroup:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+volumes:
+- configMap
+- emptyDir
+- projected
+- secret
+- downwardAPI
+- hostPath
+- flexVolume
+- persistentVolumeClaim
+allowHostDirVolumePlugin: true

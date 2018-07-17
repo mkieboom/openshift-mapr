@@ -66,11 +66,6 @@ oc create -f kdf-provisioner.yaml
 oc get pods --all-namespaces
 ```
 
-#### Enable SELinux:
-```
-echo 1 > /sys/fs/selinux/enforce
-```
-
 #### OPTIONAL: Remove MapR Volume Driver Plugin
 ```
 oc delete -f kdf-provisioner.yaml
