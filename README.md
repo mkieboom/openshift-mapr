@@ -3,9 +3,10 @@
 
 ##  Phase 1 - Deploy the MapR Volume Driver Plugin
 
-#### Disable SELinux temporarily:
+#### Set SELinux to permissive mode:
 ```
 echo 0 > /sys/fs/selinux/enforce
+sed -i '/^SELINUX./ { s/enforcing/permissive/; }' /etc/selinux/config
 ```
 
 #### Download MapR Volume Driver Plugin files
@@ -31,6 +32,34 @@ vi kdf-plugin-openshift.yaml
 - name : KUBERNETES_SERVICE_LOCATION
   value: "changeme!:6443"
 ```
+
+#### Set the FLEXVOLUME_PLUGIN_PATH and hostPath applicable to your Openshift install
+
+When running Openshift installed using RPM's:
+```
+vi kdf-plugin-openshift.yaml
+
+# Set the following:
+  - name : FLEXVOLUME_PLUGIN_PATH
+    value: "/usr/libexec/kubernetes/kubelet-plugins/volume/exec"
+
+  - name: plugindir
+    hostPath:
+      path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/
+```
+
+When running Openshift installed Containerized:
+````
+vi kdf-plugin-openshift.yaml
+
+# Set the following:
+  - name : FLEXVOLUME_PLUGIN_PATH
+    value: "/etc/origin/kubelet-plugins/volume/exec/"
+
+  - name: plugindir
+    hostPath:
+      path: /etc/origin/kubelet-plugins/volume/exec/
+````
 
 #### When MapR Plugin v1.0.2 is not yet publically available
 ```
