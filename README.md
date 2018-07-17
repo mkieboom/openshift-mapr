@@ -37,12 +37,14 @@ vi kdf-plugin-openshift.yaml
 # Check if v1.0.2 is available on docker hub. If so, skip this step.
 # https://hub.docker.com/r/maprtech/kdf-plugin/tags/
 
+docker load -i kdf-plugin-1.0.2_002_centos7
+
 vi kdf-plugin-openshift.yaml
 
   containers:
     - name: mapr-kdfplugin
       imagePullPolicy: Never
-      image: docker.artifactory/maprtech/kdf-plugin:1.0.2_001_centos7
+      image: docker.artifactory/maprtech/kdf-plugin:1.0.2_002_centos7
 ```
 
 #### Openshift deploy MapR Volume Driver Plugin
@@ -85,8 +87,8 @@ oc delete -f kdf-namespace.yaml
 
 ####  Clone the files from the example busybox container
 ```
-git clone https://github.com/mkieboom/mapr-k8s-busybox
-cd mapr-k8s-busybox
+git clone https://github.com/mkieboom/openshift-mapr
+cd openshift-mapr
 ```
 
 #### Create mapr-apps-scc
