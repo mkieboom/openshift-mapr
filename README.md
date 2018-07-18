@@ -3,11 +3,6 @@
 
 ##  Phase 1 - Deploy the MapR Volume Driver Plugin
 
-#### Set SELinux to permissive mode:
-```
-echo 0 > /sys/fs/selinux/enforce
-sed -i '/^SELINUX./ { s/enforcing/permissive/; }' /etc/selinux/config
-```
 
 #### Download MapR Volume Driver Plugin files
 ```
