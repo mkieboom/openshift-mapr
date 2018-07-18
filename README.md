@@ -61,7 +61,16 @@ vi kdf-plugin-openshift.yaml
       path: /etc/origin/kubelet-plugins/volume/exec/
 ````
 
-Enable support for SELinux enforced:
+#### Enable support for enforced SELinux
+
+```
+# Add allowPrivilegedContainer: true
+
+vi kdf-openshift-scc.yaml
+
+  allowPrivilegedContainer: true
+```
+
 ```
 # Add "securityContext: privileged: true" to the containers section, eg:
 
@@ -80,8 +89,8 @@ vi kdf-provisioner.yaml
 
       containers:
       - name: mapr-kdfprovisioner
-          securityContext:
-            privileged: true 
+        securityContext:
+          privileged: true 
 ```
 
 
@@ -94,10 +103,10 @@ docker load -i kdf-plugin-1.0.2_002_centos7
 
 vi kdf-plugin-openshift.yaml
 
-  containers:
-    - name: mapr-kdfplugin
-      imagePullPolicy: Never
-      image: docker.artifactory/maprtech/kdf-plugin:1.0.2_002_centos7
+      containers:
+        - name: mapr-kdfplugin
+          imagePullPolicy: Never
+          image: docker.artifactory/maprtech/kdf-plugin:1.0.2_002_centos7
 ```
 
 #### Openshift deploy MapR Volume Driver Plugin
