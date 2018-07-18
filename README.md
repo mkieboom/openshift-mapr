@@ -25,7 +25,7 @@ wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.0.2/kdf-openshift-cr.
 ```
 # Set IP in KUBERNETES_SERVICE_LOCATION, eg:
 # - name : KUBERNETES_SERVICE_LOCATION
-#   value: "172.16.4.225:6443"
+#   value: "172.16.4.183:6443"
 
 vi kdf-plugin-openshift.yaml
 
@@ -61,6 +61,30 @@ vi kdf-plugin-openshift.yaml
       path: /etc/origin/kubelet-plugins/volume/exec/
 ````
 
+Enable support for SELinux enforced:
+```
+# Add "securityContext: privileged: true" to the containers section, eg:
+
+vi kdf-plugin-openshift.yaml
+
+      containers:
+        - name: mapr-kdfplugin
+          securityContext:
+            privileged: true 
+```
+
+```
+# Add "securityContext: privileged: true" to the containers section, eg:
+
+vi kdf-provisioner.yaml
+
+      containers:
+      - name: mapr-kdfprovisioner
+          securityContext:
+            privileged: true 
+```
+
+
 #### When MapR Plugin v1.0.2 is not yet publically available
 ```
 # Check if v1.0.2 is available on docker hub. If so, skip this step.
@@ -78,7 +102,7 @@ vi kdf-plugin-openshift.yaml
 
 #### Openshift deploy MapR Volume Driver Plugin
 ```
-oc login -u admin -p admin https://ip-172-16-4-225.eu-west-1.compute.internal:8443/
+oc login -u admin -p admin https://ip-172-16-4-183.eu-west-1.compute.internal:8443/
 
 oc create -f kdf-namespace.yaml
 oc create -f kdf-openshift-sa.yaml
@@ -131,16 +155,64 @@ oc adm policy add-scc-to-user mapr-apps-scc system:serviceaccount:mapr-apps:mapr
 oc edit scc mapr-apps-scc
 ```
 
+#### Configure the ticket secret
+Below steps are mandatory to allow the pod to authenticate with the MapR platform 
+
+Set the mapr-provisioner-secrets to allow dynamic provisioning:
+```
+vi mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
+
+# Set the mapr-provisioner-secrets for dynamic provisioning of MapR Volumes
+# base64 encoding: "echo -n '<mapr username/mapr password>' | base64" eg:
+# echo -n 'mapr' | base64
+  MAPR_CLUSTER_USER: "bWFwcg=="
+  MAPR_CLUSTER_PASSWORD: "bWFwcg=="
+```
+
+Set the mapr-ticket-secret to allow the pod to authenticate with the MapR cluster:
+```
+vi mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
+
+# Set the mapr-ticket-secret
+
+# To create a Ticket, login onto the MapR cluster and execute following:
+# 1. maprlogin password -user mapr
+# 2. echo -n $(cat /tmp/maprticket_####) | base64
+# 3. combine 6 lines base64 output in single CONTAINER_TICKET line, eg:
+  CONTAINER_TICKET: ZGVtby5tYXByLmNvbSBxSkxrVEhoeGtFRlUxU2p3a29NcUN4ZVhra1hPS2JwTVphNllTQ3FpaENnYlRhVkQyOEUrTTJhSng4dWljdlp1aHozR1pOS2pCNW8wRmFjRlVWRGVvVEZYVzhXdElTUG5DOEp2Q01zZG1PcEFIZ2V6eWdrekU5V1ZwaGVoT2RMcWFyaVdGVmtZSjEwVngzNG85RFFzM0U5YmdFWFZ0bVJNQ2JiREd6THpJbzVvVDBpTkU5OUlhT2dySnN3RE9SYmd6bFRBRjBzVVlHK05iL09mUkVWNUV1SFpKZk13M3NxMUY3MjI1bjJHN3hBZkhCQXFGb0dDSGhoNnhvVm45MmNEZHZJTGk4anVkU1ZMSzd0SFpFZzRZUFJXazdZUU0rdz0=
+
+```
+
+Set the MapR cluster details to reflect your MapR cluster deployment:
+```
+vi mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
+
+  restServers: "172.18.14.32:8443"
+  cldbHosts: "172.18.14.32"
+  cluster: "demo.mapr.com"
+  securityType: "secure"
+  ticketSecretName: "mapr-ticket-secret"
+  ticketSecretNamespace: "mapr-apps"
+  maprSecretName: "mapr-provisioner-secrets"
+  maprSecretNamespace: "mapr-apps"
+  namePrefix: "busybox"
+  mountPrefix: "/busybox"
+  reclaimPolicy: "Retain"
+  advisoryquota: "100M"
+  type: "rw"
+  mount: "1"
+```
+
 #### Launch the busybox pod to test the mapr-apps-scc
 ```
-kubectl create -f mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
-kubectl create -f mapr-k8s-busybox-secure-dynamic-part2-container.yaml
+oc create -f mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
+oc create -f mapr-k8s-busybox-secure-dynamic-part2-container.yaml
 ```
 
 #### Connect to the pod and create data on the MapR Filesystem
 ```
 # Connect to the container
-kubectl exec -it mapr-k8s-busybox -n mapr-apps -- sh
+oc exec -it mapr-k8s-busybox -n mapr-apps -- sh
 
 # Check the uid/gid in the container and create files/folder on MapR
 # The uid/gid should reflect the uid/gid from the mapr user on the MapR cluster (5000/5000)
@@ -154,8 +226,8 @@ ls -al /mapr
 #### Optional: cleanup and remove pod and scc
 ```
 # Remove the pod
-kubectl delete -f mapr-k8s-busybox-secure-dynamic-part2-container.yaml
-kubectl delete -f mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
+oc delete -f mapr-k8s-busybox-secure-dynamic-part2-container.yaml
+oc delete -f mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
 
 # Cleanup
 oc adm policy remove-scc-from-user mapr-apps-scc system:serviceaccount:mapr-apps:mapr-apps-sa
