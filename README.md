@@ -88,22 +88,6 @@ vi kdf-provisioner.yaml
           privileged: true 
 ```
 
-
-#### When MapR Plugin v1.0.2 is not yet publically available
-```
-# Check if v1.0.2 is available on docker hub. If so, skip this step.
-# https://hub.docker.com/r/maprtech/kdf-plugin/tags/
-
-docker load -i kdf-plugin-1.0.2_002_centos7
-
-vi kdf-plugin-openshift.yaml
-
-      containers:
-        - name: mapr-kdfplugin
-          imagePullPolicy: Never
-          image: docker.artifactory/maprtech/kdf-plugin:1.0.2_002_centos7
-```
-
 #### Openshift deploy MapR Volume Driver Plugin
 ```
 oc login -u admin -p admin https://ip-172-16-4-183.eu-west-1.compute.internal:8443/
