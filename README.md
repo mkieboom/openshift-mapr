@@ -152,7 +152,7 @@ oc adm policy add-scc-to-user mapr-apps-scc system:serviceaccount:mapr-apps:mapr
 oc edit scc mapr-apps-scc
 ```
 
-#### Configure the ticket secret
+#### Configure the MapR ticket secret
 Below steps are mandatory to allow the pod to authenticate with the MapR platform 
 
 Set the mapr-provisioner-secrets to allow dynamic provisioning:
