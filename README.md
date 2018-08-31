@@ -10,6 +10,10 @@ Phase 2: deploy a container on Openshift leveraging MapR as the persistent datas
 Always check the latest MapR documentation on:  
 https://mapr.com/docs/home/PersistentStorage/kdf_plan_and_install.html
 
+## Prerequisites
+Red Hat Openshift version 3.9.40 or later  
+MapR Converged Data Platform v6.0.1 or later
+
 ##  Phase 1 - Deploy the MapR Volume Driver Plugin
 
 
