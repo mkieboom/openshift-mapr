@@ -1,5 +1,10 @@
 # openshift-mapr
 
+##  Introduction
+Below example shows deploying a docker container on Openshift leveraging the MapR Volume Driver Plugin to persist the storage of the container. For demo purposes only.
+
+Always check the latest MapR documentation on:
+https://mapr.com/docs/home/PersistentStorage/kdf_plan_and_install.html
 
 ##  Phase 1 - Deploy the MapR Volume Driver Plugin
 
