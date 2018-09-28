@@ -4,8 +4,10 @@
 Below example shows deploying a docker container on Red Hat Openshift leveraging the MapR Volume Driver Plugin to persist the storage of the container. For demo purposes only.
 
 It consists of two pases:  
-Phase 1: deploy the MapR Volume Driver Plugin on Openshift.  
-Phase 2: deploy a container on Openshift leveraging MapR as the persistent datastore with either:
+[Phase 1: deploy the MapR Volume Driver Plugin on Openshift.](#phase-1---deploy-the-mapr-volume-driver-plugin)
+Phase 2: deploy a container on Openshift leveraging MapR as the persistent datastore
+[Clone the project and create the SCC](#phase-2---launch-containers-on-openshift-leveraging-the-mapr-volume-driver-plugin)
+Followed by either:
    * [a) using a static MapR Volume (volume already exists on MapR)](#phase-2a---static-mapr-volume)
    * [b) creating a MapR Volume dynamically during container launch](#phase-2b---dynamic-mapr-volume)
 
@@ -17,7 +19,6 @@ Red Hat Openshift version 3.9.40 or later
 MapR Converged Data Platform v6.0.1 or later
 
 ##  Phase 1 - Deploy the MapR Volume Driver Plugin
-
 
 #### Download MapR Volume Driver Plugin files
 ```
