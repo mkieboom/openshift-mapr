@@ -157,9 +157,10 @@ oc adm policy add-scc-to-user mapr-apps-scc system:serviceaccount:mapr-apps:mapr
 oc edit scc mapr-apps-scc
 ```
 
-Now continue with either [static](#static) provisioning, or [dynamic](#dynamic) provisioning:
+Now continue with either [static](#phase-2a) provisioning, or [dynamic](#dynamic) provisioning:
 
-##  Phase 2a) using a static MapR Volume (volume already exists on MapR) {#static}
+##  Phase 2a
+### Using a static MapR Volume (volume already exists on MapR)
 
 #### Configure the MapR ticket secret
 
