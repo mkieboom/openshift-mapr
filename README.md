@@ -3,9 +3,11 @@
 ##  Introduction
 Below example shows deploying a docker container on Red Hat Openshift leveraging the MapR Volume Driver Plugin to persist the storage of the container. For demo purposes only.
 
-It consists of thwo pases:  
+It consists of two pases:  
 Phase 1: deploy the MapR Volume Driver Plugin on Openshift.  
-Phase 2: deploy a container on Openshift leveraging MapR as the persistent datastore.  
+Phase 2: deploy a container on Openshift leveraging MapR as the persistent datastore with either:
+   * [a) using a static MapR Volume (volume already exists on MapR)](#static)
+   * [b) creating a MapR Volume dynamically during container launch](#dynamic)
 
 Always check the latest MapR documentation on:  
 https://mapr.com/docs/home/PersistentStorage/kdf_plan_and_install.html
@@ -133,7 +135,6 @@ oc delete -f kdf-namespace.yaml
 
 ##  Phase 2 - Launch containers on Openshift leveraging the MapR Volume Driver Plugin
 
-
 ####  Clone the files from the example busybox container
 ```
 git clone https://github.com/mkieboom/openshift-mapr
@@ -156,7 +157,32 @@ oc adm policy add-scc-to-user mapr-apps-scc system:serviceaccount:mapr-apps:mapr
 oc edit scc mapr-apps-scc
 ```
 
+Now continue with either [static](#static) provisioning, or [dynamic](#dynamic) provisioning:
+
+##  Phase 2a) using a static MapR Volume (volume already exists on MapR) {#static}
+
 #### Configure the MapR ticket secret
+
+Set the mapr-ticket-secret to allow the pod to authenticate with the MapR cluster:
+```
+vi mapr-k8s-busybox-secure-static.yaml
+
+# Set the mapr-ticket-secret
+
+# To create a Ticket, login onto the MapR cluster and execute following:
+# 1. maprlogin password -user mapr
+# 2. echo -n $(cat /tmp/maprticket_####) | base64
+# 3. combine 6 lines base64 output in single CONTAINER_TICKET line, eg:
+  CONTAINER_TICKET: ZGVtby5tYXByLmNvbSBxSkxrVEhoeGtFRlUxU2p3a29NcUN4ZVhra1hPS2JwTVphNllTQ3FpaENnYlRhVkQyOEUrTTJhSng4dWljdlp1aHozR1pOS2pCNW8wRmFjRlVWRGVvVEZYVzhXdElTUG5DOEp2Q01zZG1PcEFIZ2V6eWdrekU5V1ZwaGVoT2RMcWFyaVdGVmtZSjEwVngzNG85RFFzM0U5YmdFWFZ0bVJNQ2JiREd6THpJbzVvVDBpTkU5OUlhT2dySnN3RE9SYmd6bFRBRjBzVVlHK05iL09mUkVWNUV1SFpKZk13M3NxMUY3MjI1bjJHN3hBZkhCQXFGb0dDSGhoNnhvVm45MmNEZHZJTGk4anVkU1ZMSzd0SFpFZzRZUFJXazdZUU0rdz0=
+
+```
+
+
+
+##  Phase 2b) creating a MapR Volume dynamically during container launch {#dynamic}
+Below example will dynamically create a volume on MapR and mount this dynamicall created volume in the pod in /mapr
+
+#### Configure the MapR provisioner secrets
 Below steps are mandatory to allow the pod to authenticate with the MapR platform 
 
 Set the mapr-provisioner-secrets to allow dynamic provisioning:
@@ -169,6 +195,8 @@ vi mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
   MAPR_CLUSTER_USER: "bWFwcg=="
   MAPR_CLUSTER_PASSWORD: "bWFwcg=="
 ```
+
+#### Configure the MapR ticket secret
 
 Set the mapr-ticket-secret to allow the pod to authenticate with the MapR cluster:
 ```
@@ -215,13 +243,25 @@ oc create -f mapr-k8s-busybox-secure-dynamic-part2-container.yaml
 # Connect to the container
 oc exec -it mapr-k8s-busybox -n mapr-apps -- sh
 
-# Check the uid/gid in the container and create files/folder on MapR
-# The uid/gid should reflect the uid/gid from the mapr user on the MapR cluster (5000/5000)
-id
-ls -al /mapr
-touch /mapr/123
-mkdir /mapr/mydir
-ls -al /mapr
+# From inside the container:
+
+oc exec -it mapr-apps-bash -n mapr-apps -- sh
+/ # mkdir /mapr/test
+/ # touch /mapr/hello_from_container
+/ #
+/ # ls -al /mapr/
+total 1
+drwxr-xr-x    3 5000     5000             2 Sep 27 10:31 .
+drwxr-xr-x    1 root     root            52 Sep 27 10:30 ..
+-rw-r--r--    1 5000     5000             0 Sep 27 10:31 hello_from_container
+drwxr-xr-x    2 5000     5000             0 Sep 27 10:30 test
+/ #
+
+# On the MapR Cluster
+
+$ ls -al /mapr/demo.mapr.com/mapr-k8s-busybox/
+-rw-r--r--.  1 mapr mapr 0 Sep 27 10:31 hello_from_container
+drwxr-xr-x.  2 mapr mapr 0 Sep 27 10:30 test
 ```
 
 #### Optional: cleanup and remove pod and scc

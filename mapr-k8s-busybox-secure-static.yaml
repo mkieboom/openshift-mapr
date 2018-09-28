@@ -1,0 +1,112 @@
+# MapR Volume Driver Plugin for Kubernetes
+
+# Using the MapR Volume Driver Plugin for dynamic provisioning
+
+# Provisioning: dynamic
+# Container:    busybox
+
+# Prerequisites: mapr-apps-busybox volume on MapR Cluster:
+# maprcli volume create -name mapr-k8s-busybox -path /mapr-k8s-busybox
+
+# MapR Apps Namespace
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mapr-apps
+  labels:
+    name: mapr-apps
+
+# MapR Apps ServiceAccount
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mapr-apps-sa
+  namespace: mapr-apps
+
+
+# Ticket to authenticate with MapR Converged Data Platform
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mapr-ticket-secret
+  namespace: mapr-apps
+type: Opaque
+data:
+# To create a Ticket:
+# 1. maprlogin password -user mapr
+# 2. echo -n $(cat /tmp/maprticket_####) | base64
+# 3. combine 6 lines base64 output in single CONTAINER_TICKET line:
+  CONTAINER_TICKET: ZGVtby5tYXByLmNvbSB2Y0xwZFBSWUtSUXNoWWJLN2NzeSttekxvS29taHhMUUE2bFgvYkhSQ3hPMWdRYnVDTTdyQ1Q5TXlOS3dkM0V1MENDYmVvOTN6cmtUVGxVSklERkwwcDdVQ2wyc3N5eDZsNjFSOHFsck5xK0xyRkJVZEhhSllvbmVhY25nOU9TcmpvRWE2UDlLV3BzZDFIb1g4QlJOay8rR0c5RkFnQlF2SC9xWTdFanBnTHoyaWNXZE5WRzNnbkJnQUpQNXVTQ0QxWTllTVc5cXRnVFNuRmlkRmZ6ZkoraFFRNHlsTVNLOW1oUE96dWlzSHNPK1A5blVzb3ZVaUowS2RFZ29HQmJvWW5pZVYrNDgwRDk4aUt0ZUJRSEgzUElKYk83c0Exbz0=
+
+# PersistentVolume for MapR Converged Data Platform
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-mapr-apps
+  namespace: mapr-apps
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: mapr-apps
+    name: pvc-mapr-apps
+  flexVolume:
+    driver: "mapr.com/maprfs"
+    options:
+      cluster: "demo.mapr.com"
+      cldbHosts: "172.16.4.233"
+      volumePath: "/mapr-k8s-busybox"
+      securityType: "secure"
+      ticketSecretName: "mapr-ticket-secret"
+      ticketSecretNamespace: "mapr-apps"
+
+# PVC
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-mapr-apps
+  namespace: mapr-apps
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5G
+
+# Pod
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mapr-apps-busybox
+  namespace: mapr-apps
+spec:
+  containers:
+  - name: mapr-apps-busybox
+    image: busybox
+    imagePullPolicy: IfNotPresent 
+    args:
+    - sleep
+    - "1000000"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "500m"
+    volumeMounts:
+    - mountPath: /mapr
+      name: maprvolume
+  serviceAccount: mapr-apps-sa
+  serviceAccountName: mapr-apps-sa
+  volumes:
+    - name: maprvolume
+      persistentVolumeClaim:
+        claimName: pvc-mapr-apps
+
