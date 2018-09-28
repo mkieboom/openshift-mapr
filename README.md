@@ -105,7 +105,7 @@ vi kdf-provisioner.yaml
 
 #### Openshift deploy MapR Volume Driver Plugin
 ```
-oc login -u admin -p admin https://ip-172-16-4-183.eu-west-1.compute.internal:8443/
+oc login
 
 oc create -f kdf-namespace.yaml
 oc create -f kdf-openshift-sa.yaml
@@ -118,6 +118,7 @@ oc create -f kdf-provisioner.yaml
 ```
 
 #### Check status of pods
+Only continue when all MapR pods show they are running:
 ```
 oc get pods --all-namespaces
 ```
@@ -157,9 +158,15 @@ oc adm policy add-scc-to-user mapr-apps-scc system:serviceaccount:mapr-apps:mapr
 oc edit scc mapr-apps-scc
 ```
 
-Now continue with either [static](#phase-2a-static-mapr-volume) provisioning, or [dynamic](#phase-2b-dynamic-mapr-volume) provisioning:
+Now continue with either [static](#phase-2a---static-mapr-volume) provisioning, or [dynamic](#phase-2b---dynamic-mapr-volume) provisioning.
 
 ##  Phase 2a - Static MapR Volume
+
+#### Create a volume on the MapR cluster
+We start by creating a Volume on te MapR cluster to mount into the pod:
+```
+maprcli volume create -name mapr-k8s-busybox -path /mapr-k8s-busybox
+```
 
 #### Configure the MapR ticket secret
 
@@ -177,7 +184,25 @@ vi mapr-k8s-busybox-secure-static.yaml
 
 ```
 
+#### MapR Cluster details
+Set the MapR cluster details to reflect your MapR cluster deployment:
+```
+vi mapr-k8s-busybox-secure-static.yaml
 
+      cluster: "demo.mapr.com"
+      cldbHosts: "172.16.4.233 172.16.4.234 172.16.4.235"
+      volumePath: "/mapr-k8s-busybox"
+      securityType: "secure"
+      ticketSecretName: "mapr-ticket-secret"
+      ticketSecretNamespace: "mapr-apps"
+```
+
+#### Launch the busybox pod to test the mapr-apps-scc
+```
+oc create -f mapr-k8s-busybox-secure-static.yaml
+```
+
+Continue with [connecting to the pod](#connect-to-the-pod-and-create-data-on-the-mapr-filesystem) and write data to the MapR cluster from inside the pod.
 
 ## Phase 2b - Dynamic MapR Volume
 Below example will dynamically create a volume on MapR and mount this dynamicall created volume in the pod in /mapr
@@ -212,12 +237,13 @@ vi mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
 
 ```
 
+#### MapR Cluster details
 Set the MapR cluster details to reflect your MapR cluster deployment:
 ```
 vi mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
 
-  restServers: "172.18.14.32:8443"
-  cldbHosts: "172.18.14.32"
+  restServers: "172.18.4.233:8443"
+  cldbHosts: "172.16.4.233 172.16.4.234 172.16.4.235"
   cluster: "demo.mapr.com"
   securityType: "secure"
   ticketSecretName: "mapr-ticket-secret"
@@ -238,14 +264,19 @@ oc create -f mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
 oc create -f mapr-k8s-busybox-secure-dynamic-part2-container.yaml
 ```
 
+Continue with [connecting to the pod](#connect-to-the-pod-and-create-data-on-the-mapr-filesystem) and write data to the MapR cluster from inside the pod.
+
+
 #### Connect to the pod and create data on the MapR Filesystem
 ```
-# Connect to the container
-oc exec -it mapr-k8s-busybox -n mapr-apps -- sh
 
 # From inside the container:
 
-oc exec -it mapr-apps-bash -n mapr-apps -- sh
+# Connect to the container
+oc exec -it mapr-k8s-busybox -n mapr-apps -- sh
+
+# Create a folder and file and validate the uid/gid
+# The uid/gid should match the uid/gid in the MapR ticket
 / # mkdir /mapr/test
 / # touch /mapr/hello_from_container
 / #
@@ -257,8 +288,7 @@ drwxr-xr-x    1 root     root            52 Sep 27 10:30 ..
 drwxr-xr-x    2 5000     5000             0 Sep 27 10:30 test
 / #
 
-# On the MapR Cluster
-
+# On the MapR Cluster:
 $ ls -al /mapr/demo.mapr.com/mapr-k8s-busybox/
 -rw-r--r--.  1 mapr mapr 0 Sep 27 10:31 hello_from_container
 drwxr-xr-x.  2 mapr mapr 0 Sep 27 10:30 test
