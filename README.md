@@ -7,7 +7,8 @@ It consists of two pases:
 [Phase 1: deploy the MapR Volume Driver Plugin on Openshift.](#phase-1---deploy-the-mapr-volume-driver-plugin)
 
 Phase 2: deploy a container on Openshift leveraging MapR as the persistent datastore
-[Clone the project and create the SCC](#phase-2---launch-containers-on-openshift-leveraging-the-mapr-volume-driver-plugin)
+
+   * [Clone the project and create the SCC](#phase-2---launch-containers-on-openshift-leveraging-the-mapr-volume-driver-plugin)
 
 Followed by either:
    * [a) using a static MapR Volume (volume already exists on MapR)](#phase-2a---static-mapr-volume)
