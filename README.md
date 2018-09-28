@@ -6,8 +6,8 @@ Below example shows deploying a docker container on Red Hat Openshift leveraging
 It consists of two pases:  
 Phase 1: deploy the MapR Volume Driver Plugin on Openshift.  
 Phase 2: deploy a container on Openshift leveraging MapR as the persistent datastore with either:
-   * [a) using a static MapR Volume (volume already exists on MapR)](#static)
-   * [b) creating a MapR Volume dynamically during container launch](#dynamic)
+   * [a) using a static MapR Volume (volume already exists on MapR)](#phase-2a-static-mapr-volume)
+   * [b) creating a MapR Volume dynamically during container launch](#phase-2b-dynamic-mapr-volume)
 
 Always check the latest MapR documentation on:  
 https://mapr.com/docs/home/PersistentStorage/kdf_plan_and_install.html
@@ -157,10 +157,9 @@ oc adm policy add-scc-to-user mapr-apps-scc system:serviceaccount:mapr-apps:mapr
 oc edit scc mapr-apps-scc
 ```
 
-Now continue with either [static](#phase-2a) provisioning, or [dynamic](#dynamic) provisioning:
+Now continue with either [static](#phase-2a-static-mapr-volume) provisioning, or [dynamic](#phase-2b-dynamic-mapr-volume) provisioning:
 
-##  Phase 2a
-### Using a static MapR Volume (volume already exists on MapR)
+##  Phase 2a - Static MapR Volume
 
 #### Configure the MapR ticket secret
 
@@ -180,7 +179,7 @@ vi mapr-k8s-busybox-secure-static.yaml
 
 
 
-##  Phase 2b) creating a MapR Volume dynamically during container launch {#dynamic}
+## Phase 2b - Dynamic MapR Volume
 Below example will dynamically create a volume on MapR and mount this dynamicall created volume in the pod in /mapr
 
 #### Configure the MapR provisioner secrets
