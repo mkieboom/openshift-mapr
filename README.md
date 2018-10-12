@@ -235,8 +235,8 @@ vi mapr-k8s-busybox-secure-dynamic-part1-volumedriver.yaml
 
 # To create a Ticket, login onto the MapR cluster and execute following:
 # 1. maprlogin password -user mapr
-# 2. echo -n $(cat /tmp/maprticket_####) | base64
-# 3. combine 6 lines base64 output in single CONTAINER_TICKET line, eg:
+# 2. echo -n $(cat /tmp/maprticket_####) | base64 -w 0
+# 3. Copy the base64 encoded ticket into the CONTAINER_TICKET line, eg:
   CONTAINER_TICKET: ZGVtby5tYXByLmNvbSBxSkxrVEhoeGtFRlUxU2p3a29NcUN4ZVhra1hPS2JwTVphNllTQ3FpaENnYlRhVkQyOEUrTTJhSng4dWljdlp1aHozR1pOS2pCNW8wRmFjRlVWRGVvVEZYVzhXdElTUG5DOEp2Q01zZG1PcEFIZ2V6eWdrekU5V1ZwaGVoT2RMcWFyaVdGVmtZSjEwVngzNG85RFFzM0U5YmdFWFZ0bVJNQ2JiREd6THpJbzVvVDBpTkU5OUlhT2dySnN3RE9SYmd6bFRBRjBzVVlHK05iL09mUkVWNUV1SFpKZk13M3NxMUY3MjI1bjJHN3hBZkhCQXFGb0dDSGhoNnhvVm45MmNEZHZJTGk4anVkU1ZMSzd0SFpFZzRZUFJXazdZUU0rdz0=
 
 ```
