@@ -35,10 +35,10 @@ metadata:
   namespace: mapr-apps
 type: Opaque
 data:
-# To create a Ticket:
+# To create a Ticket, login onto the MapR cluster and execute following:
 # 1. maprlogin password -user mapr
-# 2. echo -n $(cat /tmp/maprticket_####) | base64
-# 3. combine 6 lines base64 output in single CONTAINER_TICKET line:
+# 2. echo -n $(cat /tmp/maprticket_####) | base64 -w 0
+# 3. Copy the base64 encoded ticket into the CONTAINER_TICKET line, eg:
   CONTAINER_TICKET: ZGVtby5tYXByLmNvbSB2Y0xwZFBSWUtSUXNoWWJLN2NzeSttekxvS29taHhMUUE2bFgvYkhSQ3hPMWdRYnVDTTdyQ1Q5TXlOS3dkM0V1MENDYmVvOTN6cmtUVGxVSklERkwwcDdVQ2wyc3N5eDZsNjFSOHFsck5xK0xyRkJVZEhhSllvbmVhY25nOU9TcmpvRWE2UDlLV3BzZDFIb1g4QlJOay8rR0c5RkFnQlF2SC9xWTdFanBnTHoyaWNXZE5WRzNnbkJnQUpQNXVTQ0QxWTllTVc5cXRnVFNuRmlkRmZ6ZkoraFFRNHlsTVNLOW1oUE96dWlzSHNPK1A5blVzb3ZVaUowS2RFZ29HQmJvWW5pZVYrNDgwRDk4aUt0ZUJRSEgzUElKYk83c0Exbz0=
 
 # PersistentVolume for MapR Converged Data Platform
