@@ -1,0 +1,122 @@
+# MapR Volume Driver Plugin for Kubernetes
+
+# Using the MapR Volume Driver Plugin for dynamic provisioning
+
+# Provisioning: dynamic
+# Container:    mapr-pacc
+
+# Prerequisites: mapr-pacc-volume volume on MapR Cluster:
+# maprcli volume create -name mapr-pacc-volume -path /mapr-pacc-volume
+
+# MapR Apps Namespace
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mapr-apps-pacc
+  labels:
+    name: mapr-apps-pacc
+
+
+# Ticket to authenticate with MapR Converged Data Platform
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mapr-ticket-secret
+  namespace: mapr-apps-pacc
+type: Opaque
+data:
+# To create a Ticket, login onto the MapR cluster and execute following:
+# 1. maprlogin password -user mapr
+# 2. echo -n $(cat /tmp/maprticket_####) | base64 -w 0
+# 3. Copy the base64 encoded ticket into the CONTAINER_TICKET line, eg:
+  CONTAINER_TICKET: ZGVtby5tYXByLmNvbSBPTGRUYW9xeDhYWFNZN3ZLRjBncHJXQU1LVzFHZ2loVXVFZS9rM0RMYTFLREpZVVA4RlBHcHJQM205TWNuZnpFUTVGaUZwdDd2aU5aWUtOR0pzU2duQ0Y5RDFhMU9Fb3Z6c1NubnB3NlpHenZsZklTSVNqaWVheVdtM2pveHlVUU82SFc4WXk2UVByZndJOXBCMUdHcGhCS0JLR2pNemcwREVBeCtSM1pYR2FRQXVDbEFtUWRkZ3FRMjkzT21aR2RvQ3g5cThvcjN0QWxSeStvWUM2TG9VNXMxbzZ4azU4MjZqVFhLSXdRUjBmS0F3ZldlMWdjTmxEZ0RoUFVIVkUrdkZmVzhTOVh5RURHVDFtdEZHY1ZnTXIrOU1kVVowWT0=
+
+# PersistentVolume for MapR Converged Data Platform
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-mapr-apps-pacc
+  namespace: mapr-apps-pacc
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: mapr-apps-pacc
+    name: pvc-mapr-apps-pacc
+  flexVolume:
+    driver: "mapr.com/maprfs"
+    options:
+      cluster: "demo.mapr.com"
+      cldbHosts: "172.16.4.233"
+      volumePath: "/mapr-pacc-volume"
+      securityType: "secure"
+      ticketSecretName: "mapr-ticket-secret"
+      ticketSecretNamespace: "mapr-apps-pacc"
+
+# PVC
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-mapr-apps-pacc
+  namespace: mapr-apps-pacc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5G
+
+# Pod
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mapr-apps-pacc
+  namespace: mapr-apps-pacc
+spec:
+  containers:
+  - name: mapr-apps-pacc
+    image: maprtech/pacc:6.0.1_5.0.0_centos7_yarn_spark
+    imagePullPolicy: IfNotPresent 
+    args:
+    - sleep
+    - "1000000"
+    env:
+      - name: MAPR_CLUSTER
+        value: "demo.mapr.com"
+      - name: MAPR_CLDB_HOSTS
+        value: "172.16.4.233"
+      - name: MAPR_CONTAINER_USER
+        value: "mapr"
+      - name: MAPR_CONTAINER_GROUP
+        value: "mapr"
+      - name: MAPR_CONTAINER_UID
+        value: "5000"
+      - name: MAPR_CONTAINER_GID
+        value: "5000"
+      - name: MAPR_TICKETFILE_LOCATION
+        value: "/tmp/maprticket/CONTAINER_TICKET"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "500m"
+    volumeMounts:
+    - name: maprvolume
+      mountPath: /mapr
+    - name: mapr-ticket-secret
+      mountPath: "/tmp/maprticket"
+      readOnly: true
+  volumes:
+    - name: maprvolume
+      persistentVolumeClaim:
+        claimName: pvc-mapr-apps-pacc
+    - name: mapr-ticket-secret
+      secret:
+        secretName: mapr-ticket-secret
