@@ -25,40 +25,8 @@ maprcli volume create -name mapr-pacc-volume -path /mapr-pacc-volume
 ```
 
 ##  Phase 2 - Create a custom MapR PACC container
-
-Download and run the MapR PACC setup.sh script:
-```
-wget http://package.mapr.com/releases/installer/mapr-setup.sh
-
-sudo bash mapr-setup.sh docker client
-```
-
-IMPORTANT: make sure to answer 'No' to the question on adding the POSIX (FUSE) client. We will not be leveraging a FUSE client in the PACC container (as that would require privileged access for the Docker container), but instead we will use a K8S PVC.
-```
-# Do NOT install the FUSE client:
-Add POSIX (FUSE) client to container? (y/n) [y]: n
-
-# Do install the Hadoop and Spark client
-Install Hadoop YARN client (y/n) [n]: y
-Add Spark client to container? (y/n) [n]: y
-```
-
-Complete example of creating a PACC:
-```
-Build MapR client image? (y/n) [y]: y
-Image OS class (centos7, ubuntu16) [centos7]:
-Docker FROM base image name:tag [centos:centos7]:
-MapR core version [6.1.0]: 6.0.1
-MapR MEP version [6.0.0]: 5.0.0
-Install Hadoop YARN client (y/n) [n]: y
-Add POSIX (FUSE) client to container? (y/n) [y]: n
-Add HBase client to container? (y/n) [n]: n
-Add Hive client to container? (y/n) [n]: n
-Add Pig client to container? (y/n) [n]: n
-Add Spark client to container? (y/n) [n]: y
-Add Streams clients to container? (y/n) [y]: n
-MapR client image tag name [maprtech/pacc:6.1.0_6.0.0_centos7_yarn_spark]:
-```
+Manually create a PACC container to avoid root requirement when using mapr-setup.sh For an example:
+https://github.com/mkieboom/mapr-docker-client/tree/master/mapr-client
 
 Once the PACC image has been created, either push it to a Docker registry or make sure to use a node selector to run the pod on Openshift on the node where the custom PACC has been created.
 
