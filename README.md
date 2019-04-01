@@ -27,12 +27,12 @@ MapR Converged Data Platform v6.0.1 or later
 ```
 mkdir ~/mapr-kdf
 cd ~/mapr-kdf
-wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.0/kdf-namespace.yaml
-wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.0/kdf-provisioner.yaml
-wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.0/kdf-plugin-openshift.yaml
-wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.0/kdf-openshift-sa.yaml
-wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.0/kdf-openshift-scc.yaml
-wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.0/kdf-openshift-cr.yaml
+wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.1/kdf-namespace.yaml
+wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.1/kdf-provisioner.yaml
+wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.1/kdf-plugin-openshift.yaml
+wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.1/kdf-openshift-sa.yaml
+wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.1/kdf-openshift-scc.yaml
+wget http://archive.mapr.com/tools/KubernetesDataFabric/v1.1.1/kdf-openshift-cr.yaml
 ```
 
 #### Configure MapR Volume Driver Plugin to point to Kubernetes Service
